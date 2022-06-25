@@ -61,4 +61,29 @@ def getCN_dis_Oneshell(positions,centerindex,N):
     distances = list(freq.keys())[N]
     CN = list(freq.values())[N]
     return CN,distances
+def moment_descriptor(atom:Atoms):
+    moment_atom=atom.get_moments_of_inertia(vectors=False)
+    I=np.sort(moment_atom)
+    zeta=((I[2]-I[1])**2+(I[1]-I[0])**2+(I[0]-I[2])**2)/(I[0]**2+I[1]**2+I[2]**2)
+    eta=(2*I[1]-I[0]-I[2])/I[2]
+    dis=distance_matrix(atom.arrays['positions'],atom.arrays['positions'])
+    dis_sort=np.round(np.sort(dis,axis=1),5)
+    cn_n=[]
+    for i in range(len(dis_sort)):
+        cn=np.unique(dis_sort[i],return_counts=True)[1][1]
+        cn_n.append(cn)
+    cn_n = np.array(cn_n)
+    mean_c=np.mean(cn_n)
+    RMS_c=np.sqrt(np.sum((cn_n-mean_c)**2/len(cn_n)))
+    if eta<10e-10 and eta>-10e-10:
+        eta=0.0
+    if zeta<10e-10 and zeta>-10e-10:
+        zeta=0.0
+    return {"Departure from sphere":np.round(zeta,6),
+            "oblateness":np.round(eta,6),
+            "mean_c":np.round(mean_c,6),
+            "RMS_c":np.round(RMS_c,6),
+            "min_c":np.min(cn_n),
+            "max_c":np.max(cn_n)}
+
 
