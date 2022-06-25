@@ -3,6 +3,8 @@ import pandas as pd
 from scipy.spatial import distance_matrix
 from collections import Counter
 import os
+import numpy as np
+from ase import Atoms
 
 
 def radius(positions):
@@ -61,13 +63,14 @@ def getCN_dis_Oneshell(positions,centerindex,N):
     distances = list(freq.keys())[N]
     CN = list(freq.values())[N]
     return CN,distances
+
 def moment_descriptor(atom:Atoms):
     moment_atom=atom.get_moments_of_inertia(vectors=False)
     I=np.sort(moment_atom)
     zeta=((I[2]-I[1])**2+(I[1]-I[0])**2+(I[0]-I[2])**2)/(I[0]**2+I[1]**2+I[2]**2)
     eta=(2*I[1]-I[0]-I[2])/I[2]
     dis=distance_matrix(atom.arrays['positions'],atom.arrays['positions'])
-    dis_sort=np.round(np.sort(dis,axis=1),5)
+    dis_sort=np.round(np.sort(dis,axis=1),5) #set a tolerance of distance
     cn_n=[]
     for i in range(len(dis_sort)):
         cn=np.unique(dis_sort[i],return_counts=True)[1][1]
@@ -85,5 +88,3 @@ def moment_descriptor(atom:Atoms):
             "RMS_c":np.round(RMS_c,6),
             "min_c":np.min(cn_n),
             "max_c":np.max(cn_n)}
-
-
